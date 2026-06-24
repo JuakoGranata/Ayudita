@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Registro — Estudiando o Apoyando</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Sora:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0D1117;
+      --surface: #161B22;
+      --surface2: #1C2330;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.16);
+      --text: #E6EDF3;
+      --text-muted: #8B949E;
+      --text-dim: #484F58;
+      --blue: #3B82F6;
+      --blue-light: #93C5FD;
+      --blue-bg: rgba(59,130,246,0.12);
+      --blue-border: rgba(59,130,246,0.4);
+      --green: #10B981;
+      --green-light: #6EE7B7;
+      --green-bg: rgba(16,185,129,0.12);
+      --green-border: rgba(16,185,129,0.4);
+      --red: #EF4444;
+      --red-bg: rgba(239,68,68,0.1);
+      --red-border: rgba(239,68,68,0.35);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    nav {
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(13,17,23,0.85);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+
+    .logo {
+      font-family: 'Sora', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--text);
+      text-decoration: none;
+      letter-spacing: -0.3px;
+    }
+    .logo span { color: var(--blue); }
+
+    .nav-link {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .nav-link:hover { color: var(--text); }
+
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1rem;
+    }
+
+    .container { width: 100%; max-width: 500px; }
+
+    /* ---- SCREENS ---- */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    .hero { text-align: center; margin-bottom: 2.5rem; }
+
+    .eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+      padding: 4px 12px;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+    }
+
+    .hero h1 {
+      font-family: 'Sora', sans-serif;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.8px;
+      line-height: 1.2;
+      margin-bottom: 10px;
+    }
+    .hero p { font-size: 14px; color: var(--text-muted); line-height: 1.6; }
+
+    /* ROLE CARDS */
+    .role-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 1.5rem;
+    }
+
+    .role-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: border-color 0.2s, background 0.2s, transform 0.15s;
+      text-align: center;
+      user-select: none;
+      position: relative;
+      overflow: hidden;
+    }
+    .role-card:hover { border-color: var(--border-hover); transform: translateY(-1px); }
+    .role-card.active-student { border-color: var(--blue-border); background: var(--blue-bg); }
+    .role-card.active-support { border-color: var(--green-border); background: var(--green-bg); }
+
+    .role-card .check {
+      position: absolute; top: 10px; right: 10px;
+      width: 18px; height: 18px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 10px; opacity: 0; transition: opacity 0.2s;
+    }
+    .role-card.active-student .check { background: var(--blue); opacity: 1; }
+    .role-card.active-support .check { background: var(--green); opacity: 1; }
+
+    .role-icon { font-size: 32px; margin-bottom: 10px; display: block; transition: transform 0.2s; }
+    .role-card:hover .role-icon { transform: scale(1.08); }
+
+    .role-name { font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .role-card.active-student .role-name { color: var(--blue-light); }
+    .role-card.active-support .role-name { color: var(--green-light); }
+    .role-desc { font-size: 11.5px; color: var(--text-muted); line-height: 1.5; }
+
+    /* FORM */
+    .form-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.75rem;
+    }
+
+    .form-row { margin-bottom: 1rem; }
+    .form-row label {
+      display: block; font-size: 12px; font-weight: 500;
+      color: var(--text-muted); margin-bottom: 6px; letter-spacing: 0.2px;
+    }
+
+    .form-row input,
+    .form-row select {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      outline: none;
+      transition: border-color 0.15s, background 0.15s;
+      appearance: none;
+    }
+
+    .form-row select {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%238B949E' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+      padding-right: 36px;
+      color-scheme: dark;
+    }
+    .form-row select option { background: #1C2330; color: #E6EDF3; }
+    .form-row input::placeholder { color: var(--text-dim); }
+    .form-row input:focus,
+    .form-row select:focus { border-color: var(--blue-border); background: rgba(59,130,246,0.05); }
+
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    .collapsible { max-height: 0; overflow: hidden; opacity: 0; transition: max-height 0.35s ease, opacity 0.25s ease; }
+    .collapsible.open { max-height: 120px; opacity: 1; }
+
+    .divider { height: 1px; background: var(--border); margin: 1.25rem 0; }
+
+    .btn-submit {
+      width: 100%; padding: 12px;
+      font-size: 15px; font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s, opacity 0.15s;
+      background: var(--surface2);
+      color: var(--text-muted);
+    }
+    .btn-submit.student-active { background: var(--blue); color: #fff; border-color: var(--blue); }
+    .btn-submit.support-active { background: var(--green); color: #fff; border-color: var(--green); }
+    .btn-submit:hover { opacity: 0.88; transform: translateY(-1px); }
+    .btn-submit:active { transform: scale(0.99); }
+
+    .terms { text-align: center; font-size: 11.5px; color: var(--text-dim); margin-top: 12px; line-height: 1.5; }
+    .terms a { color: var(--text-muted); text-decoration: underline; text-underline-offset: 2px; }
+
+    /* ---- TOPIC SCREEN ---- */
+    #screen-topics .form-card { max-width: 500px; margin: 0 auto; }
+
+    .topic-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1rem; }
+
+    .input-error input { border-color: var(--red-border) !important; background: var(--red-bg) !important; }
+
+    .error-msg {
+      display: none;
+      background: var(--red-bg);
+      border: 1px solid var(--red-border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 13px;
+      color: #FCA5A5;
+      margin-bottom: 1rem;
+      line-height: 1.5;
+    }
+    .error-msg.visible { display: block; }
+
+    .btn-add {
+      width: 100%; padding: 11px;
+      font-size: 14px; font-weight: 600;
+      font-family: 'Sora', sans-serif;
+      background: var(--blue); color: #fff;
+      border: none; border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-add:hover { opacity: 0.88; }
+    .btn-add:active { transform: scale(0.99); }
+    .btn-add.loading { opacity: 0.6; pointer-events: none; }
+
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .btn-add.loading .spinner { display: block; }
+    .btn-add.loading .btn-label { display: none; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* GROUP LIST */
+    .group-list { margin-top: 1.5rem; }
+
+    .group-block {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .group-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .group-title {
+      font-family: 'Sora', sans-serif;
+      font-size: 15px; font-weight: 600;
+      color: var(--text);
+    }
+
+    .group-badge {
+      font-size: 11px; font-weight: 500;
+      padding: 2px 10px; border-radius: 99px;
+      background: var(--blue-bg);
+      color: var(--blue-light);
+      border: 1px solid var(--blue-border);
+    }
+
+    .topic-list { list-style: none; counter-reset: topic-counter; }
+
+    .topic-list li {
+      counter-increment: topic-counter;
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+      color: var(--text-muted);
+      animation: fadeIn 0.25s ease;
+    }
+    .topic-list li:last-child { border-bottom: none; }
+
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+    .topic-num {
+      font-family: 'Sora', sans-serif;
+      font-size: 11px; font-weight: 600;
+      color: var(--blue-light);
+      background: var(--blue-bg);
+      border: 1px solid var(--blue-border);
+      border-radius: 4px;
+      padding: 1px 6px;
+      min-width: 26px;
+      text-align: center;
+      margin-top: 1px;
+    }
+
+    .topic-text { color: var(--text); line-height: 1.4; }
+
+    .btn-delete {
+      margin-left: auto; background: none; border: none;
+      color: var(--text-dim); cursor: pointer; font-size: 16px;
+      padding: 0 2px; line-height: 1;
+      transition: color 0.15s;
+    }
+    .btn-delete:hover { color: var(--red); }
+
+    .empty-hint {
+      text-align: center; padding: 2rem;
+      color: var(--text-dim); font-size: 13px;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+    }
+
+    /* SUCCESS */
+    .success-screen {
+      display: none; text-align: center;
+      padding: 3rem 1.5rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .success-icon {
+      font-size: 52px; margin-bottom: 1.25rem; display: block;
+      animation: pop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+    }
+    @keyframes pop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .success-screen h2 {
+      font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700;
+      color: var(--text); margin-bottom: 8px;
+    }
+    .success-screen p { font-size: 14px; color: var(--text-muted); line-height: 1.6; max-width: 300px; margin: 0 auto 1.5rem; }
+
+    .btn-back {
+      font-size: 13px; color: var(--text-muted); background: none;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 8px 20px; cursor: pointer; font-family: 'Inter', sans-serif;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .btn-back:hover { border-color: var(--border-hover); color: var(--text); }
+
+    footer {
+      text-align: center; padding: 1.5rem;
+      font-size: 12px; color: var(--text-dim);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (max-width: 480px) {
+      .role-grid { gap: 8px; }
+      .two-col, .topic-inputs { grid-template-columns: 1fr; }
+      .hero h1 { font-size: 26px; }
+      .form-card { padding: 1.25rem; }
+      nav { padding: 1rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, .collapsible, .role-card, .btn-submit { transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="#" class="logo">apren<span>di</span></a>
+    <a href="#" class="nav-link" id="nav-right">¿Ya tenés cuenta? Ingresá</a>
+  </nav>
+
+  <main>
+    <div class="container">
+
+      <!-- SCREEN 1: REGISTRO -->
+      <div class="screen active" id="screen-register">
+        <div class="hero">
+          <span class="eyebrow">Nueva cuenta</span>
+          <h1>¿Cómo vas a participar?</h1>
+          <p>Elegí tu rol para personalizar tu experiencia dentro de la plataforma.</p>
+        </div>
+
+        <div class="role-grid">
+          <div class="role-card" id="card-student" onclick="selectRole('student')" tabindex="0" role="button" aria-pressed="false">
+            <div class="check" aria-hidden="true">✓</div>
+            <span class="role-icon" aria-hidden="true">📚</span>
+            <div class="role-name">Estudiando</div>
+            <div class="role-desc">Quiero aprender y acceder a recursos.</div>
+          </div>
+          <div class="role-card" id="card-support" onclick="selectRole('support')" tabindex="0" role="button" aria-pressed="false">
+            <div class="check" aria-hidden="true">✓</div>
+            <span class="role-icon" aria-hidden="true">🤝</span>
+            <div class="role-name">Apoyando</div>
+            <div class="role-desc">Quiero compartir conocimiento y ayudar.</div>
+          </div>
+        </div>
+
+        <div class="form-card" id="form-card">
+          <div class="two-col form-row">
+            <div>
+              <label for="nombre">Nombre</label>
+              <input type="text" id="nombre" placeholder="Tu nombre" autocomplete="given-name" />
+            </div>
+            <div>
+              <label for="apellido">Apellido</label>
+              <input type="text" id="apellido" placeholder="Tu apellido" autocomplete="family-name" />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label for="email">Correo electrónico</label>
+            <input type="email" id="email" placeholder="tu@correo.com" autocomplete="email" />
+          </div>
+
+          <div class="form-row">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" placeholder="Mínimo 8 caracteres" autocomplete="new-password" />
+          </div>
+
+          <div class="collapsible" id="field-student">
+            <div class="divider"></div>
+            <div class="form-row">
+              <label for="nivel">Nivel educativo</label>
+              <select id="nivel">
+                <option value="" disabled selected>Seleccioná tu nivel</option>
+                <option>Secundaria</option>
+                <option>Terciario / Universitario</option>
+                <option>Posgrado</option>
+                <option>Autodidacta</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="collapsible" id="field-support">
+            <div class="divider"></div>
+            <div class="form-row">
+              <label for="area">Área de experiencia</label>
+              <input type="text" id="area" placeholder="Ej: Matemáticas, Programación, Idiomas..." />
+            </div>
+          </div>
+
+          <div style="margin-top: 1.5rem;">
+            <button class="btn-submit" id="submit-btn" onclick="handleSubmit()">Crear cuenta</button>
+            <p class="terms">Al registrarte aceptás los <a href="#">términos de uso</a> y la <a href="#">política de privacidad</a>.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SCREEN 2: MATERIAS Y TEMAS -->
+      <div class="screen" id="screen-topics">
+        <div class="hero">
+          <span class="eyebrow" id="topics-eyebrow">Mi perfil</span>
+          <h1 id="topics-title">¿Qué estás estudiando?</h1>
+          <p id="topics-subtitle">Agregá las materias y temas que te interesan.</p>
+        </div>
+
+        <div class="form-card">
+          <div id="error-box" class="error-msg"></div>
+
+          <div class="topic-inputs">
+            <div class="form-row" style="margin-bottom:0">
+              <label for="input-materia">Materia</label>
+              <input type="text" id="input-materia" placeholder="Ej: Matemáticas" />
+            </div>
+            <div class="form-row" style="margin-bottom:0">
+              <label for="input-tema">Tema</label>
+              <input type="text" id="input-tema" placeholder="Ej: Álgebra lineal" />
+            </div>
+          </div>
+
+          <div style="margin-top: 1rem;">
+            <button class="btn-add" id="btn-add" onclick="addTopic()">
+              <div class="spinner"></div>
+              <span class="btn-label">+ Agregar al grupo</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="group-list" id="group-list">
+          <div class="empty-hint" id="empty-hint">Todavía no agregaste ningún tema. ¡Empezá arriba!</div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <footer>© 2026 aprendi · Todos los derechos reservados</footer>
+
+  <script>
+    let selectedRole = null;
+    let userName = '';
+    // groups: { [materia]: [tema, tema, ...] }
+    const groups = {};
+
+    // ---------- REGISTRO ----------
+    function selectRole(role) {
+      selectedRole = role;
+      const cs = document.getElementById('card-student');
+      const cp = document.getElementById('card-support');
+      cs.className = 'role-card' + (role === 'student' ? ' active-student' : '');
+      cp.className = 'role-card' + (role === 'support' ? ' active-support' : '');
+      cs.setAttribute('aria-pressed', role === 'student');
+      cp.setAttribute('aria-pressed', role === 'support');
+      document.getElementById('field-student').className = 'collapsible' + (role === 'student' ? ' open' : '');
+      document.getElementById('field-support').className = 'collapsible' + (role === 'support' ? ' open' : '');
+      document.getElementById('submit-btn').className = 'btn-submit ' + (role === 'student' ? 'student-active' : 'support-active');
+    }
+
+    document.querySelectorAll('.role-card').forEach(card => {
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+      });
+    });
+
+    function handleSubmit() {
+      const nombre = document.getElementById('nombre').value.trim();
+      const email  = document.getElementById('email').value.trim();
+      const pass   = document.getElementById('password').value;
+      if (!selectedRole) { alert('Por favor elegí un rol.'); return; }
+      if (!nombre) { alert('Ingresá tu nombre.'); return; }
+      if (!email || !email.includes('@')) { alert('Ingresá un correo válido.'); return; }
+      if (pass.length < 8) { alert('La contraseña debe tener al menos 8 caracteres.'); return; }
+
+      userName = nombre;
+      goToTopics();
+    }
+
+    function goToTopics() {
+      document.getElementById('screen-register').classList.remove('active');
+      const s2 = document.getElementById('screen-topics');
+      s2.classList.add('active');
+
+      const isStudent = selectedRole === 'student';
+      document.getElementById('topics-eyebrow').textContent = isStudent ? 'Estudiando' : 'Apoyando';
+      document.getElementById('topics-title').textContent = isStudent
+        ? '¿Qué estás estudiando?' : '¿En qué podés ayudar?';
+      document.getElementById('topics-subtitle').textContent = isStudent
+        ? 'Agregá las materias y temas que querés aprender.'
+        : 'Agregá las materias y temas en los que podés dar apoyo.';
+      document.getElementById('input-materia').placeholder = isStudent ? 'Ej: Física' : 'Ej: Programación';
+      document.getElementById('input-tema').placeholder = isStudent ? 'Ej: Cinemática' : 'Ej: Python básico';
+      document.getElementById('nav-right').textContent = '¡Hola, ' + userName + '!';
+    }
+
+    // ---------- VALIDACIÓN Y GRUPOS ----------
+    async function addTopic() {
+      const materiaRaw = document.getElementById('input-materia').value.trim();
+      const temaRaw    = document.getElementById('input-tema').value.trim();
+      const errorBox   = document.getElementById('error-box');
+      const btn        = document.getElementById('btn-add');
+
+      errorBox.classList.remove('visible');
+      errorBox.textContent = '';
+
+      if (!materiaRaw || !temaRaw) {
+        showError('Completá tanto la materia como el tema antes de agregar.');
+        return;
+      }
+
+      btn.classList.add('loading');
+
+      try {
+        const result = await validateWithClaude(materiaRaw, temaRaw);
+
+        if (!result.materia_valida) {
+          showError('❌ "' + materiaRaw + '" no es una materia reconocida. Revisá el nombre e intentá de nuevo (Ej: Matemáticas, Historia, Química...).');
+          markError('input-materia');
+          return;
+        }
+
+        if (!result.tema_valido) {
+          showError('❌ "' + temaRaw + '" no es un tema de ' + result.materia_normalizada + '. Revisá que el tema corresponda a esa materia.');
+          markError('input-tema');
+          return;
+        }
+
+        const materia = result.materia_normalizada;
+        const tema    = result.tema_normalizado;
+
+        if (!groups[materia]) groups[materia] = [];
+        if (groups[materia].includes(tema)) {
+          showError('Ese tema ya está en el grupo de ' + materia + '.');
+          return;
+        }
+
+        groups[materia].push(tema);
+        document.getElementById('input-materia').value = '';
+        document.getElementById('input-tema').value = '';
+        renderGroups();
+
+      } catch (err) {
+        showError('Hubo un error al validar. Revisá tu conexión e intentá de nuevo.');
+        console.error(err);
+      } finally {
+        btn.classList.remove('loading');
+      }
+    }
+
+    async function validateWithClaude(materia, tema) {
+      const prompt = `Sos un validador estricto de materias y temas académicos.
+El usuario ingresó:
+- Materia: "${materia}"
+- Tema: "${tema}"
+
+Respondé SOLO con un JSON con este formato exacto, sin texto adicional:
+{
+  "materia_valida": true o false,
+  "tema_valido": true o false,
+  "materia_normalizada": "nombre correcto de la materia en español, con mayúscula inicial",
+  "tema_normalizado": "nombre correcto del tema en español, con mayúscula inicial"
+}
+
+Reglas:
+- materia_valida es true si el texto corresponde a una materia o área de estudio real (Matemáticas, Historia, Física, Química, Programación, Inglés, Biología, etc). Tolerá variaciones de ortografía menores.
+- tema_valido es true SOLO si el tema es un tópico legítimo que pertenece a esa materia. Si la materia no es válida, tema_valido debe ser false.
+- Si la materia o el tema es texto sin sentido, insultos o inventado, ambos deben ser false.
+- materia_normalizada y tema_normalizado son las versiones corregidas y capitalizadas correctamente.`;
+
+      const response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 200,
+          messages: [{ role: 'user', content: prompt }]
+        })
+      });
+
+      const data = await response.json();
+      const text = data.content.map(b => b.text || '').join('').trim();
+      const clean = text.replace(/```json|```/g, '').trim();
+      return JSON.parse(clean);
+    }
+
+    function showError(msg) {
+      const box = document.getElementById('error-box');
+      box.textContent = msg;
+      box.classList.add('visible');
+    }
+
+    function markError(inputId) {
+      const wrap = document.getElementById(inputId).parentElement;
+      wrap.classList.add('input-error');
+      document.getElementById(inputId).addEventListener('input', () => wrap.classList.remove('input-error'), { once: true });
+    }
+
+    function renderGroups() {
+      const list = document.getElementById('group-list');
+      const keys = Object.keys(groups);
+      document.getElementById('empty-hint').style.display = keys.length ? 'none' : 'block';
+
+      // remove old blocks
+      list.querySelectorAll('.group-block').forEach(b => b.remove());
+
+      keys.forEach(materia => {
+        const block = document.createElement('div');
+        block.className = 'group-block';
+        block.innerHTML = `
+          <div class="group-header">
+            <span class="group-title">📖 ${materia}</span>
+            <span class="group-badge">${groups[materia].length} tema${groups[materia].length !== 1 ? 's' : ''}</span>
+          </div>
+          <ol class="topic-list">
+            ${groups[materia].map((t, i) => `
+              <li>
+                <span class="topic-num">${i + 1}</span>
+                <span class="topic-text">${t}</span>
+                <button class="btn-delete" onclick="deleteTopic('${materia}', ${i})" title="Eliminar">×</button>
+              </li>
+            `).join('')}
+          </ol>`;
+        list.appendChild(block);
+      });
+    }
+
+    function deleteTopic(materia, index) {
+      groups[materia].splice(index, 1);
+      if (groups[materia].length === 0) delete groups[materia];
+      renderGroups();
+    }
+
+    // Enter key on inputs
+    ['input-materia', 'input-tema'].forEach(id => {
+      document.getElementById(id).addEventListener('keydown', e => {
+        if (e.key === 'Enter') addTopic();
+      });
+    });
+  </script>
+</body>
+</html>
