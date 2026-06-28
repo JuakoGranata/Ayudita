@@ -25,6 +25,19 @@
     .logo { font-family: 'Sora', sans-serif; font-weight: 700; font-size: 18px; color: var(--text); text-decoration: none; letter-spacing: -0.3px; }
     .logo span { color: var(--green); }
     .nav-right { font-size: 13px; color: var(--text-muted); }
+    .settings-btn { background: none; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 10px; cursor: pointer; font-size: 16px; line-height: 1; transition: border-color 0.15s, background 0.15s; color: var(--text-muted); }
+    .settings-btn:hover { border-color: var(--border-hover); background: var(--surface); }
+    .settings-menu { display: none; position: absolute; right: 0; top: calc(100% + 8px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); min-width: 220px; box-shadow: 0 8px 24px rgba(0,0,0,0.4); z-index: 200; overflow: hidden; }
+    .settings-menu.open { display: block; }
+    .settings-user { padding: 12px 16px; font-size: 13px; color: var(--text-muted); }
+    .settings-user strong { display: block; font-size: 14px; color: var(--text); margin-bottom: 2px; }
+    .settings-divider { height: 1px; background: var(--border); }
+    .settings-item { width: 100%; padding: 11px 16px; font-size: 13px; text-align: left; background: none; border: none; cursor: pointer; font-family: 'Inter', sans-serif; color: var(--text-muted); transition: background 0.12s, color 0.12s; display: block; }
+    .settings-item:hover { background: var(--surface2); color: var(--text); }
+    .settings-item.danger { color: #FCA5A5; }
+    .settings-item.danger:hover { background: var(--red-bg); color: #FCA5A5; }
+    .settings-item.danger-soft { color: var(--text-dim); font-size: 12px; }
+    .settings-item.danger-soft:hover { background: var(--red-bg); color: #FCA5A5; }
 
     main { flex: 1; display: flex; align-items: flex-start; justify-content: center; padding: 3rem 1rem; }
     .container { width: 100%; max-width: 520px; }
@@ -181,7 +194,19 @@
 
 <nav>
   <a href="#" class="logo" onclick="goHome(); return false;">ayud<span>ita</span></a>
-  <span class="nav-right" id="nav-right"></span>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="nav-right" id="nav-right"></span>
+    <div class="settings-wrap" id="settings-wrap" style="display:none;position:relative;">
+      <button class="settings-btn" id="settings-btn" onclick="toggleSettings()" title="Ajustes">⚙️</button>
+      <div class="settings-menu" id="settings-menu">
+        <div class="settings-user" id="settings-user"></div>
+        <div class="settings-divider"></div>
+        <button class="settings-item danger" onclick="cerrarSesion()">🚪 Cerrar sesión</button>
+        <button class="settings-item" onclick="showDebug(); toggleSettings();">🔍 Ver usuarios guardados</button>
+        <button class="settings-item danger-soft" onclick="if(confirm('¿Borrar TODOS los usuarios de este dispositivo?')){localStorage.removeItem(LS_USERS);localStorage.removeItem(LS_SESSION);location.reload();}">🗑️ Borrar todos los datos</button>
+      </div>
+    </div>
+  </div>
 </nav>
 
 <main>
@@ -314,9 +339,17 @@
       <div class="save-banner" id="save-banner">
         <div class="save-banner-text">
           <strong>Guardá tu cuenta</strong>
-          Tus grupos serán visibles para otros usuarios de Ayudita.
+          Tus grupos se guardan automáticamente. El botón confirma que todo está sincronizado.
         </div>
         <button class="btn-save" id="btn-save" onclick="saveAccount()">💾 Guardar</button>
+      </div>
+      <div id="debug-panel" style="margin-top:1rem; background:#0D1117; border:1px solid rgba(255,255,255,0.06); border-radius:8px; padding:12px; font-size:11px; color:#484F58; display:none;">
+        <strong style="color:#8B949E; display:block; margin-bottom:6px;">Usuarios guardados en este dispositivo:</strong>
+        <div id="debug-list"></div>
+        <button onclick="document.getElementById('debug-panel').style.display='none'" style="margin-top:8px; background:none; border:none; color:#484F58; cursor:pointer; font-size:11px;">Cerrar</button>
+      </div>
+      <div style="text-align:center; margin-top:10px;">
+        <button onclick="showDebug()" style="background:none; border:none; color:#484F58; font-size:11px; cursor:pointer; text-decoration:underline;">Ver usuarios guardados</button>
       </div>
     </div>
 
@@ -369,6 +402,8 @@
     Object.keys(groups).forEach(k => delete groups[k]);
     Object.assign(groups, JSON.parse(JSON.stringify(u.materias || {})));
     document.getElementById('nav-right').textContent = u.apodo || u.nombre;
+    document.getElementById('settings-wrap').style.display = 'block';
+    document.getElementById('settings-user').innerHTML = '<strong>' + (u.apodo || u.nombre) + '</strong>' + u.email + '<br><span style="font-size:11px;color:var(--text-dim)">' + (u.rol === 'student' ? '📚 Estudiando' : '🤝 Apoyando') + '</span>';
     setupTopicsScreen();
     renderGroups();
     showScreen('screen-topics');
@@ -434,6 +469,10 @@
     Object.keys(groups).forEach(k => delete groups[k]);
     localStorage.setItem(LS_SESSION, currentUser.id);
     document.getElementById('nav-right').textContent = currentUser.apodo;
+    document.getElementById('settings-wrap').style.display = 'block';
+    document.getElementById('settings-user').innerHTML = '<strong>' + currentUser.apodo + '</strong>' + currentUser.email + '<br><span style="font-size:11px;color:var(--text-dim)">' + (currentUser.rol === 'student' ? '📚 Estudiando' : '🤝 Apoyando') + '</span>';
+    // Auto-save new user immediately so they appear in localStorage
+    autoSave();
     setupTopicsScreen();
     showScreen('screen-topics');
   }
@@ -456,19 +495,7 @@
   }
 
   // ── GUARDAR CUENTA ──
-  function saveAccount() {
-    if (!currentUser) return;
-    currentUser.materias = JSON.parse(JSON.stringify(groups));
-    const users = getAllUsers();
-    const idx = users.findIndex(u => u.id === currentUser.id);
-    if (idx >= 0) users[idx] = currentUser; else users.push(currentUser);
-    saveAllUsers(users);
-
-    const btn = document.getElementById('btn-save');
-    btn.textContent = '✓ Guardado';
-    btn.disabled = true;
-    setTimeout(() => { btn.textContent = '💾 Guardar'; btn.disabled = false; }, 2000);
-  }
+  function saveAccount() { autoSave(); }
 
   // ── TOPICS SCREEN SETUP ──
   function setupTopicsScreen() {
@@ -562,7 +589,25 @@
     groups[materia].push(tema);
     document.getElementById('input-materia').value = '';
     document.getElementById('input-tema').value = '';
+    autoSave();
     renderGroups();
+  }
+
+
+  // ── AUTO-GUARDADO silencioso ──
+  function autoSave() {
+    if (!currentUser) return;
+    currentUser.materias = JSON.parse(JSON.stringify(groups));
+    const users = getAllUsers();
+    const idx = users.findIndex(u => u.id === currentUser.id);
+    if (idx >= 0) users[idx] = currentUser; else users.push(currentUser);
+    saveAllUsers(users);
+    const btn = document.getElementById('btn-save');
+    if (btn) {
+      btn.textContent = '✓ Guardado';
+      btn.disabled = true;
+      setTimeout(() => { btn.textContent = '💾 Guardar'; btn.disabled = false; }, 1500);
+    }
   }
 
   function showError(msg) { const b = document.getElementById('error-box'); b.textContent = msg; b.classList.add('visible'); }
@@ -603,6 +648,7 @@
   function deleteTopic(materia, index) {
     groups[materia].splice(index, 1);
     if (groups[materia].length === 0) delete groups[materia];
+    autoSave();
     renderGroups();
   }
 
@@ -703,6 +749,53 @@
   });
 
   document.getElementById('login-pass').addEventListener('keydown', e => { if (e.key==='Enter') handleLogin(); });
+
+  function toggleSettings() {
+    document.getElementById('settings-menu').classList.toggle('open');
+  }
+  // Close menu when clicking outside
+  document.addEventListener('click', e => {
+    const wrap = document.getElementById('settings-wrap');
+    if (wrap && !wrap.contains(e.target)) {
+      document.getElementById('settings-menu').classList.remove('open');
+    }
+  });
+
+  function cerrarSesion() {
+    localStorage.removeItem(LS_SESSION);
+    currentUser = null;
+    selectedRole = null;
+    Object.keys(groups).forEach(k => delete groups[k]);
+    document.getElementById('nav-right').textContent = '';
+    document.getElementById('settings-wrap').style.display = 'none';
+    document.getElementById('settings-menu').classList.remove('open');
+    // Reset register form
+    ['nombre','apellido','apodo','email','password'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    document.getElementById('nivel').value = '';
+    document.getElementById('card-student').className = 'role-card';
+    document.getElementById('card-support').className = 'role-card';
+    document.getElementById('submit-btn').className = 'btn-submit';
+    showScreen('screen-landing');
+  }
+  function showDebug() {
+    const users = getAllUsers();
+    const panel = document.getElementById('debug-panel');
+    const list  = document.getElementById('debug-list');
+    if (!users.length) {
+      list.innerHTML = '<span style="color:#EF4444">Ninguno guardado todavía.</span>';
+    } else {
+      list.innerHTML = users.map(u => {
+        const materias = Object.keys(u.materias || {}).map(m =>
+          m + ': [' + (u.materias[m] || []).join(', ') + ']'
+        ).join('<br>&nbsp;&nbsp;');
+        return '<div style="margin-bottom:8px; color:#8B949E"><strong style="color:#E6EDF3">' + (u.apodo||u.nombre) + '</strong> (' + u.rol + ')<br>&nbsp;&nbsp;' + (materias || 'Sin materias aún') + '</div>';
+      }).join('');
+    }
+    panel.style.display = 'block';
+  }
+
 </script>
 </body>
 </html>
